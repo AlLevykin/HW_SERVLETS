@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public class MainServlet extends HttpServlet {
   private final Map<String, BiConsumer<HttpServletRequest, HttpServletResponse>> routes = new HashMap<>();
@@ -44,7 +43,11 @@ public class MainServlet extends HttpServlet {
               final var path = req.getRequestURI();
               if (path.matches("/api/posts/\\d+")) {
                 final var id = Long.parseLong(path.substring(path.lastIndexOf("/")));
-                controller.getById(id, resp);
+                  try {
+                      controller.getById(id, resp);
+                  } catch (IOException e) {
+                      throw new RuntimeException(e);
+                  }
               } else {
                 try {
                   controller.all(resp);
@@ -72,7 +75,7 @@ public class MainServlet extends HttpServlet {
                 final var id = Long.parseLong(path.substring(path.lastIndexOf("/")));
                 controller.removeById(id, resp);
               } else {
-                resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
               }
             });
   }
