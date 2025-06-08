@@ -24,15 +24,23 @@ public class PostRepository {
   }
 
   public Post save(Post post) {
-    long curVal, newVal;
+    if (post.getId() == 0) {
+      long curVal, newVal;
 
-    do {
-      curVal = counter.get();
-      newVal = (curVal + 1) % Long.MAX_VALUE;
-    } while (!counter.compareAndSet(curVal, newVal));
+      do {
+        curVal = counter.get();
+        newVal = (curVal + 1) % Long.MAX_VALUE;
+      } while (!counter.compareAndSet(curVal, newVal));
 
-    post.setId(newVal);
-    posts.put(newVal, post);
+      post.setId(newVal);
+      posts.put(newVal, post);
+    } else {
+      if (!posts.containsKey(post.getId())) {
+        throw new NotFoundException(String.format("Id %d not found", post.getId()));
+      } else {
+        posts.put(post.getId(), post);
+      }
+    }
 
     return post;
   }
